@@ -6,4 +6,5 @@ license       = "AGPL"
 
 # Dependencies
 requires "nim >= 1.4"
+requires "bitstreams"
 requires "binarylang"
