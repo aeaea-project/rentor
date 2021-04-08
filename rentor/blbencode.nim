@@ -47,12 +47,12 @@ union(*bencode, *BElemKind):
   (bekStr):
     *integer: *size
     s: _ = ":"
-    s: *str(size)
+    u8: *str[size]
   (bekList):
     s: _ = "l"
-    +bencode(nextType(s)): *{listElements}
+    +bencode(nextType(s)): *{list}
     s: _ = "e"
   (bekDict):
     s: _ = "d"
-    +bencode(nextType(s)): *{dictElements[2]}
+    +bencode(nextType(s)): *{dict[2]}
     s: _ = "e"
