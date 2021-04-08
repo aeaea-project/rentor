@@ -1,5 +1,5 @@
 import strutils, sequtils, net, cgi, uri, std/sha1
-import binarylang
+import binarylang, binarylang/plugins
 import rentor/blbencode
 
 proc hashToByteString(hash: SecureHash): string =
@@ -32,14 +32,6 @@ proc getContentLen(headers: seq[Header]): int =
   else:
     0
 
-template strGet(parse, parsed, output: untyped) =
-  parse
-  output = parsed.mapIt(it.char).join
-template strPut(encode, encoded, output: untyped) =
-  for i in 0 ..< encoded.len:
-    output[i] = byte(encoded[i])
-  encode
-
 struct(httppost):
   s: _ = "HTTP/"
   s: version
@@ -50,7 +42,7 @@ struct(httppost):
   s: _ = "\r\n"
   *header: {headers}
   s: _ = "\r\n"
-  u8 {str[string]}: content[getContentLen(headers)]
+  u8 {toStr[string]}: content[getContentLen(headers)]
 
 struct(httpget):
   s: _ = "GET "
@@ -60,7 +52,7 @@ struct(httpget):
   s: _ = "\r\n"
   *header: {headers}
   s: _ = "\r\n"
-  u8 {str[string]}: content[getContentLen(headers)]
+  u8 {toStr[string]}: content[getContentLen(headers)]
 
 block:
   var file = newFileBitStream("/some/path/_.torrent")
@@ -71,15 +63,13 @@ block:
     url = "/announce?"
     host, port: string
   for ben in metainfo.dict:
-    if ben[0].disc == bekStr and ben[0].str.mapIt(it.char).join == "info":
+    if ben[0].disc == bekStr and ben[0].str == "info":
       url &= "info_hash=" & ben[1].fromBencode(ben[1].disc).secureHash.hashToByteString.encodeUrl
   for ben in metainfo.dict[1][1].list:
-    if ben.list[0].str.mapIt(it.char).join.startsWith("http"):
-      let uri = ben.list[0].str.mapIt(it.char).join.parseUri
+    if ben.list[0].str.startsWith("http"):
+      let uri = ben.list[0].str.parseUri
       host = uri.hostname
       port = uri.port
-      echo host
-      echo port
       break
 
   var request = HTTPGET(url: url, version: "1.1")

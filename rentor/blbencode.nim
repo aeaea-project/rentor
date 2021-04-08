@@ -1,5 +1,5 @@
-import strutils
-import bitstreams, binarylang
+import strutils, sequtils
+import bitstreams, binarylang, binarylang/plugins
 
 type BElemKind* = enum
   bekInt
@@ -47,7 +47,7 @@ union(*bencode, *BElemKind):
   (bekStr):
     *integer: *size
     s: _ = ":"
-    u8: *str[size]
+    u8 {toStr[string]}: *str[size]
   (bekList):
     s: _ = "l"
     +bencode(nextType(s)): *{list}
